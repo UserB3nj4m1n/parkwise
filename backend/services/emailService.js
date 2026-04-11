@@ -1,6 +1,8 @@
 const { SMTPClient } = require('emailjs');
 
-// Configured via .env file
+console.log('Inicializujem emailService...');
+console.log('DEBUG - EMAIL_USER:', process.env.EMAIL_USER);
+
 const client = new SMTPClient({
   user: process.env.EMAIL_USER,
   password: process.env.EMAIL_PASS,
@@ -8,10 +10,9 @@ const client = new SMTPClient({
   ssl: true,
 });
 
-/**
- * Sends a booking confirmation email using emailjs
- */
 async function sendBookingConfirmation(bookingDetails) {
+  console.log('Pokus o odoslanie emailu na:', bookingDetails.email);
+  
   const { 
     email, licensePlate, booking_date, startTime, endTime, 
     total_price, cancellation_token, slot_name, cardholderName 
@@ -46,10 +47,10 @@ async function sendBookingConfirmation(bookingDetails) {
       ]
     }, (err, message) => {
       if (err) {
-        console.error('Chyba pri odosielaní emailu (emailjs):', err);
+        console.error('CHYBA pri odosielaní emailu:', err);
         reject(err);
       } else {
-        console.log(`Potvrdzovací email bol odoslaný na ${email}`);
+        console.log('EMAIL ÚSPEŠNE ODOSLANÝ!');
         resolve(message);
       }
     });
