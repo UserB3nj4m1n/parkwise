@@ -2,7 +2,7 @@ const sharp = require('sharp');
 const fs = require('fs');
 const axios = require('axios');
 
-const PLATE_RECOGNIZER_API_KEY = '1fee067971c8b3e84c33bd0a2b68db9d02e514d2'; 
+const PLATE_RECOGNIZER_API_KEY = process.env.PLATE_RECOGNIZER_API_KEY; 
 
 async function recognizeText(imagePath) {
   let processedImageBuffer;

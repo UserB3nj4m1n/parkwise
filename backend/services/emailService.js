@@ -1,68 +1,59 @@
-const nodemailer = require('nodemailer');
+const { SMTPClient } = require('emailjs');
 
-const transporter = nodemailer.createTransport({
-  host: 'mail.privateemail.com',
-  port: 465,
-  secure: true, 
-  auth: {
-    user: 'noreply@parkwise.store',
-    pass: 'sockaspsit123654'
-  }
+// Configured via .env file
+const client = new SMTPClient({
+  user: process.env.EMAIL_USER,
+  password: process.env.EMAIL_PASS,
+  host: 'smtp.gmail.com',
+  ssl: true,
 });
 
+/**
+ * Sends a booking confirmation email using emailjs
+ */
 async function sendBookingConfirmation(bookingDetails) {
-  const { email, licensePlate, booking_date, startTime, endTime, total_price, cancellation_token, slot_name, cardholderName } = bookingDetails;
+  const { 
+    email, licensePlate, booking_date, startTime, endTime, 
+    total_price, cancellation_token, slot_name, cardholderName 
+  } = bookingDetails;
 
   const cancellationUrl = `http://parkwise.store:3000/api/bookings/cancel/${cancellation_token}`;
 
-  const mailOptions = {
-    from: '"ParkWise" <noreply@parkwise.store>',
-    to: email,
-    subject: 'Potvrdenie Vašej rezervácie parkovania',
-    html: `
-      <h1>Potvrdenie Rezervácie</h1>
-      <p>Ďakujeme za Vašu rezerváciu v ParkWise!</p>
-      <h2>Faktúra</h2>
-      <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-        <tr>
-          <td style="padding: 8px;"><b>Meno a Priezvisko:</b></td>
-          <td style="padding: 8px;">${cardholderName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px;"><b>EČV:</b></td>
-          <td style="padding: 8px;">${licensePlate}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px;"><b>Parkovacie miesto:</b></td>
-          <td style="padding: 8px;">${slot_name}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px;"><b>Dátum:</b></td>
-          <td style="padding: 8px;">${booking_date}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px;"><b>Čas:</b></td>
-          <td style="padding: 8px;">${startTime} - ${endTime}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px;"><b>Celková cena:</b></td>
-          <td style="padding: 8px;">${total_price.toFixed(2)} €</td>
-        </tr>
-      </table>
-      <p style="margin-top: 20px;">
-        Ak si želáte zrušiť rezerváciu, kliknite na odkaz nižšie:
-      </p>
-      <a href="${cancellationUrl}">Zrušiť Rezerváciu</a>
-      <p style="margin-top: 20px;">Ďakujeme, že ste si vybrali ParkWise!</p>
-    `
-  };
+  const htmlContent = `
+    <h1>Potvrdenie Rezervácie</h1>
+    <p>Ďakujeme za Vašu rezerváciu v ParkWise!</p>
+    <h2>Faktúra</h2>
+    <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+      <tr><td style="padding: 8px;"><b>Meno a Priezvisko:</b></td><td style="padding: 8px;">${cardholderName}</td></tr>
+      <tr><td style="padding: 8px;"><b>EČV:</b></td><td style="padding: 8px;">${licensePlate}</td></tr>
+      <tr><td style="padding: 8px;"><b>Parkovacie miesto:</b></td><td style="padding: 8px;">${slot_name}</td></tr>
+      <tr><td style="padding: 8px;"><b>Dátum:</b></td><td style="padding: 8px;">${booking_date}</td></tr>
+      <tr><td style="padding: 8px;"><b>Čas:</b></td><td style="padding: 8px;">${startTime} - ${endTime}</td></tr>
+      <tr><td style="padding: 8px;"><b>Celková cena:</b></td><td style="padding: 8px;">${total_price.toFixed(2)} €</td></tr>
+    </table>
+    <p style="margin-top: 20px;">Ak si želáte zrušiť rezerváciu, kliknite na odkaz nižšie:</p>
+    <a href="${cancellationUrl}">Zrušiť Rezerváciu</a>
+    <p style="margin-top: 20px;">Ďakujeme, že ste si vybrali ParkWise!</p>
+  `;
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Potvrdzovací email o rezervácii bol odoslaný na ${email}`);
-  } catch (error) {
-    console.error('Chyba pri odosielaní emailu:', error);
-  }
+  return new Promise((resolve, reject) => {
+    client.send({
+      from: `ParkWise <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Potvrdenie Vašej rezervácie parkovania',
+      attachment: [
+        { data: htmlContent, alternative: true }
+      ]
+    }, (err, message) => {
+      if (err) {
+        console.error('Chyba pri odosielaní emailu (emailjs):', err);
+        reject(err);
+      } else {
+        console.log(`Potvrdzovací email bol odoslaný na ${email}`);
+        resolve(message);
+      }
+    });
+  });
 }
 
 module.exports = { sendBookingConfirmation };
