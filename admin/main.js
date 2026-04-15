@@ -180,13 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     openBarrierBtn.addEventListener('click', async () => {
         try {
-            // Hlavný server beží na porte 3000
-            const response = await fetch('http://localhost:3000/api/debug/open-barrier');
+            // Použijeme rovnakú IP adresu/hostiteľa, na ktorom beží admin, ale port 3000
+            const host = window.location.hostname;
+            const response = await fetch(`http://${host}:3000/api/debug/open-barrier`);
             const data = await response.json();
             alert(data.sprava || 'Závora bola otvorená!');
         } catch (error) {
             console.error('Chyba pri otváraní závory:', error);
-            alert('Nepodarilo sa spojiť s hlavným serverom na porte 3000.');
+            alert('Nepodarilo sa spojiť s hlavným serverom na porte 3000. Skontrolujte, či je spustený server.js');
         }
     });
 
