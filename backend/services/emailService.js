@@ -1,6 +1,6 @@
 const { SMTPClient } = require('emailjs');
 
-console.log('Inicializujem emailService...');
+console.log('Spuštanie emailService...');
 console.log('DEBUG - EMAIL_USER:', process.env.EMAIL_USER);
 
 const client = new SMTPClient({

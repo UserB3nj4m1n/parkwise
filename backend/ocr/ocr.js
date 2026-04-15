@@ -12,7 +12,7 @@ async function recognizeText(imagePath) {
     const metadata = await image.metadata();
 
     if (!metadata.width || !metadata.height) {
-      throw new Error('Could not retrieve image dimensions.');
+      throw new Error('Nepodarilo sa získať rozmery obrazka.');
     }
 
     const halfHeight = Math.round(metadata.height * 0.5);
@@ -23,31 +23,24 @@ async function recognizeText(imagePath) {
       .toBuffer();
     
     fs.writeFileSync('processed_image.jpg', processedImageBuffer);
-    console.log('Processed image saved. Top half excluded.');
+    console.log('Spracovany obrazok ulozeny.');
 
   } catch (sharpError) {
-    console.error('Error during image pre-processing:', sharpError);
+    console.error('Chyba pri priprave obrazka:', sharpError);
     return null;
   }
 
   try {
     const base64Image = processedImageBuffer.toString('base64');
-    console.log('Base64 image length:', base64Image.length); // Debugovací riadok
+    console.log('Base64 dlzka obrazka:', base64Image.length);
     const apiUrl = 'https://api.platerecognizer.com/v1/plate-reader/';
-
-    const params = {
-      // Plate Recognizer používa hlavičky pre autentifikáciu a pre základné rozpoznávanie nepotrebuje tieto parametre.
-      // TopN môže byť relevantné, ak sa očakáva viacero ŠPZ, ale zatiaľ berieme prvú.
-    };
 
     const config = {
       headers: {
         'Authorization': `Token ${PLATE_RECOGNIZER_API_KEY}`
-        // Odstránený 'Content-Type': 'application/json', aby Axios inferoval typ
       },
       params: {
-        // Voliteľné: Zadajte krajinu, ak je to potrebné, napr. 'country': 'sk' pre Slovensko
-        'regions': 'sk', // Predpokladaná krajina je Slovensko na základe predchádzajúceho kontextu, možno upraviť
+        'regions': 'sk',
         'topn': 1
       }
     };
@@ -63,12 +56,12 @@ async function recognizeText(imagePath) {
       const processedText = plate.replace(/\s/g, '').substring(0, 7).toUpperCase();
       return processedText;
     } else {
-      console.log('No license plates detected by Plate Recognizer.');
+      console.log('Ziadna SPZ nebola rozpoznana.');
       return null;
     }
 
   } catch (plateRecognizerError) {
-    console.error('Error during Plate Recognizer OCR:', plateRecognizerError.response ? plateRecognizerError.response.data : plateRecognizerError.message);
+    console.error('Chyba v rozpoznavani OCR:', plateRecognizerError.response ? plateRecognizerError.response.data : plateRecognizerError.message);
     return null;
   }
 }

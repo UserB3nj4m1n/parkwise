@@ -21,36 +21,6 @@ const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)){
     fs.mkdirSync(uploadsDir);
 }
-// --- Pomocná funkcia na čistenie adresára 'uploads' ---
-async function cleanUploadsDirectory(directory, ageThresholdHours) {
-    const now = Date.now();
-    const ageThresholdMs = ageThresholdHours * 60 * 60 * 1000;
-
-    console.log(`[Služba čistenia] Spúšťam čistenie v adresári ${directory}. Mažem súbory staršie ako ${ageThresholdHours} hodín.`);
-
-    try {
-        const files = await fs.promises.readdir(directory);
-
-        for (const file of files) {
-            const filePath = path.join(directory, file);
-            try {
-                const stats = await fs.promises.stat(filePath);
-                if (stats.isFile()) {
-                    if ((now - stats.mtime.getTime()) > ageThresholdMs) {
-                        await fs.promises.unlink(filePath);
-                        console.log(`[Služba čistenia] Starý súbor vymazaný: ${filePath}`);
-                    }
-                }
-            } catch (fileError) {
-                console.error(`[Služba čistenia] Chyba pri spracovaní súboru ${filePath}:`, fileError);
-            }
-        }
-        console.log(`[Služba čistenia] Čistenie dokončené.`);
-    } catch (dirError) {
-        console.error(`[Služba čistenia] Chyba pri čítaní adresára ${directory}:`, dirError);
-    }
-}
-
 // --- Konfigurácia nahrávania súborov (Multer) ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -272,16 +242,6 @@ app.get('/api/bookings/cancel/:token', (req, res) => {
 if (require.main === module) {
     app.listen(port, () => {
         console.log(`Server beží na adrese http://localhost:${port}`);
-
-        // Initial cleanup on startup
-        const UPLOADS_DIR = path.join(__dirname, 'uploads');
-        const CLEANUP_THRESHOLD_HOURS = 1; // Maže súbory staršie ako 1 hodina
-        cleanUploadsDirectory(UPLOADS_DIR, CLEANUP_THRESHOLD_HOURS);
-
-        // Schedule cleanup to run every hour
-        setInterval(() => {
-            cleanUploadsDirectory(UPLOADS_DIR, CLEANUP_THRESHOLD_HOURS);
-        }, 1 * 60 * 60 * 1000); // 1 hodina v milisekundách
     });
 }
 

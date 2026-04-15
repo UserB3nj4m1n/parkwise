@@ -14,7 +14,6 @@ async function recognizeLicensePlate(imagePath) {
     return licensePlate;
   } catch (error) {
     console.error('Chyba v OCR službe:', error.message);
-    // Vrátim null, aby aplikácia nespadla a v server.js to budem vedieť ošetriť
     return null; 
   }
 }
