@@ -176,7 +176,7 @@ app.post('/api/bookings', (req, res) => {
 // Koncový bod na vynútené OTVORENIE závory (len na testovanie)
 app.get('/api/debug/open-barrier', (req, res) => {
     barrierCommand = 'open';
-    res.status(200).json({ sprava: 'Príkaz na otvorenie závory nastavený.' });
+    res.status(200).json({ sprava: 'Príkaz na pre otvorenie závory spustený.' });
 });
 
 app.get('/api/barrier/command', (req, res) => {
