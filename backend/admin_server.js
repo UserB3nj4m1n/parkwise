@@ -2,6 +2,7 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
 const PORT = 3001;
@@ -17,6 +18,18 @@ app.use(express.static(path.resolve(__dirname, '../admin')));
 app.use(express.static(path.resolve(__dirname, '../docs')));
 
 // --- API Endpointy ---
+
+// Proxy endpoint na otvorenie závory (aby sme nemuseli otvárať port 3000 zvonku)
+app.get('/admin/open-barrier', async (req, res) => {
+    try {
+        const response = await axios.get('http://127.0.0.1:3000/api/debug/open-barrier');
+        res.json(response.data);
+    } catch (error) {
+        console.error('Chyba pri komunikácii s hlavným serverom:', error.message);
+        res.status(500).json({ error: 'Nepodarilo sa spojiť s hlavným serverom na porte 3000.' });
+    }
+});
+
 app.get('/admin/bookings', (req, res) => {
     db.all("SELECT id, slot_id, license_plate, email, booking_date, start_time, end_time, total_price, status FROM bookings ORDER BY id DESC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
