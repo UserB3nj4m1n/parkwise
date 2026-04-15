@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elementy ---
     const bookingsContainer = document.getElementById('bookings-container');
     const slotsContainer = document.getElementById('slots-container');
+    const openBarrierBtn = document.getElementById('open-barrier-btn');
     
     const modal = document.getElementById('edit-modal');
     const editBookingIdInput = document.getElementById('edit-booking-id');
@@ -174,6 +175,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Chyba: ' + error.message);
                 }
             }
+        }
+    });
+
+    openBarrierBtn.addEventListener('click', async () => {
+        try {
+            // Hlavný server beží na porte 3000
+            const response = await fetch('http://localhost:3000/api/debug/open-barrier');
+            const data = await response.json();
+            alert(data.sprava || 'Závora bola otvorená!');
+        } catch (error) {
+            console.error('Chyba pri otváraní závory:', error);
+            alert('Nepodarilo sa spojiť s hlavným serverom na porte 3000.');
         }
     });
 
